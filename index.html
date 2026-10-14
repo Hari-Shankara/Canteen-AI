@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FoodWise AI – Smart Surplus Rescue</title>
+<style>
+  :root{
+    --forest:#14342B; --leaf:#2E7D5B; --mint:#DFF3E7; --cream:#FBF6EC; --sand:#F1E7D3;
+    --tangerine:#F28C38; --tomato:#E4572E; --ink:#1F2A26; --muted:#5E6E66; --line:#E3DccB;
+    --white:#fff; --radius:18px; --shadow:0 10px 30px rgba(20,52,43,.10);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--cream);color:var(--ink);line-height:1.5}
+  h1,h2,h3{margin:0;font-family:Georgia,"Times New Roman",serif;color:var(--forest)}
+  button{font:inherit;cursor:pointer}
+  .hidden{display:none!important}
+
+  /* ---------- LOGIN ---------- */
+  #login{min-height:100vh;display:grid;grid-template-columns:1.1fr 1fr}
+  .login-art{background:linear-gradient(160deg,var(--forest),#1d4d3d 60%,var(--leaf));color:#fff;padding:48px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+  .login-art h2{color:#fff;font-size:2.4rem;line-height:1.15;max-width:460px}
+  .login-art p{max-width:430px;color:#cfe8da}
+  .brand{display:flex;align-items:center;gap:12px;font-family:Georgia,serif;font-size:1.4rem;font-weight:700}
+  .brand small{display:block;font-family:"Segoe UI",sans-serif;font-weight:400;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;opacity:.8}
+  .art-scene{margin:20px -20px -10px;max-width:560px}
+  .login-panel{display:flex;align-items:center;justify-content:center;padding:32px}
+  .login-card{width:100%;max-width:410px;background:#fff;border-radius:24px;padding:36px;box-shadow:var(--shadow);border:1px solid var(--line)}
+  .login-card h1{font-size:1.8rem;margin-bottom:4px}
+  .login-card .sub{color:var(--muted);margin:0 0 22px}
+  label{display:block;font-weight:600;font-size:.86rem;margin:14px 0 6px}
+  input,select{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:12px;font:inherit;background:#fff;color:var(--ink)}
+  input:focus,select:focus{outline:3px solid rgba(46,125,91,.25);border-color:var(--leaf)}
+  .btn{border:0;border-radius:12px;padding:12px 18px;font-weight:700;transition:.15s}
+  .btn-primary{background:var(--leaf);color:#fff;width:100%;margin-top:20px}
+  .btn-primary:hover{background:var(--forest)}
+  .btn-ghost{background:transparent;color:var(--forest);border:1.5px solid var(--line);width:100%;margin-top:10px}
+  .btn-ghost:hover{background:var(--mint)}
+  .hint{background:var(--mint);border-radius:12px;padding:10px 12px;font-size:.8rem;color:var(--forest);margin-top:18px}
+  .err{color:var(--tomato);font-size:.8rem;min-height:1em;margin-top:4px}
+  .pw-wrap{position:relative}
+  .pw-wrap button{position:absolute;right:8px;top:7px;border:0;background:none;color:var(--leaf);font-weight:700;font-size:.8rem}
+
+  /* ---------- APP ---------- */
+  header.top{background:var(--forest);color:#fff;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5}
+  header.top .who{display:flex;align-items:center;gap:14px;font-size:.88rem}
+  header.top .btn{background:rgba(255,255,255,.12);color:#fff;padding:8px 14px}
+  header.top .btn:hover{background:rgba(255,255,255,.22)}
+  main{max-width:1240px;margin:0 auto;padding:26px 22px 60px}
+  .hero{display:grid;grid-template-columns:1.4fr 1fr;gap:20px;align-items:center;background:linear-gradient(120deg,var(--mint),#f6efd9);border-radius:var(--radius);padding:24px 28px;border:1px solid var(--line);margin-bottom:22px}
+  .hero h2{font-size:1.7rem;margin-bottom:6px}
+  .hero p{margin:0;color:var(--muted)}
+  .safety{background:#FFF1E2;border:1.5px solid var(--tangerine);border-radius:14px;padding:12px 16px;font-size:.88rem;margin-bottom:22px}
+  .safety b{color:#A4540B}
+  .grid{display:grid;grid-template-columns:380px 1fr;gap:22px;align-items:start}
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+  .card h3{font-size:1.15rem;margin-bottom:4px}
+  .card .cap{color:var(--muted);font-size:.84rem;margin:0 0 12px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .field-err{color:var(--tomato);font-size:.75rem;min-height:1em}
+  .samples{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 4px}
+  .chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:5px 12px;font-size:.8rem;font-weight:600;color:var(--forest)}
+  .chip:hover,.chip.on{background:var(--mint);border-color:var(--leaf)}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow);border-top:5px solid var(--leaf)}
+  .stat .v{font-family:Georgia,serif;font-size:1.9rem;font-weight:700;color:var(--forest)}
+  .stat .l{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+  .stat .n{font-size:.78rem;color:var(--muted)}
+  .stat.demand{border-top-color:var(--tangerine)} .stat.surplus{border-top-color:var(--tomato)} .stat.saved{border-top-color:#7BC47F}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:22px}
+  .three{display:grid;grid-template-columns:1.2fr 1fr;gap:22px;margin-bottom:22px}
+  input[type=range]{padding:0;accent-color:var(--leaf);height:30px}
+  .sim-val{display:flex;justify-content:space-between;align-items:baseline}
+  .sim-val b{font-family:Georgia,serif;font-size:1.6rem;color:var(--forest)}
+  .quick{display:flex;gap:8px;margin:8px 0 12px;flex-wrap:wrap}
+  .banner{border-radius:12px;padding:10px 14px;font-size:.88rem;margin-top:10px}
+  .banner.ok{background:var(--mint);color:var(--forest)} .banner.warn{background:#FFE9DE;color:#9B3412} .banner.info{background:#FFF3D6;color:#7A5A06}
+  .gauge-wrap{display:flex;gap:18px;align-items:center}
+  .band{display:inline-block;padding:3px 12px;border-radius:999px;font-weight:700;font-size:.8rem;color:#fff}
+  .band.High{background:var(--tomato)} .band.Medium{background:var(--tangerine)} .band.Low{background:var(--leaf)}
+  .tag{display:inline-block;font-size:.72rem;font-weight:700;background:var(--forest);color:#fff;border-radius:6px;padding:2px 8px;letter-spacing:.04em}
+  ul.plain{margin:8px 0 0;padding-left:18px;font-size:.85rem;color:var(--muted)}
+  table{width:100%;border-collapse:collapse;font-size:.84rem}
+  th,td{padding:7px 8px;text-align:left;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-size:.74rem;text-transform:uppercase;letter-spacing:.06em}
+  .big{font-family:Georgia,serif;font-size:2.4rem;font-weight:700;color:var(--leaf)}
+  .check{display:flex;gap:10px;align-items:flex-start;font-size:.88rem;margin:8px 0;font-weight:400}
+  .check input{width:auto;margin-top:4px}
+  .btn-go{background:var(--tangerine);color:#fff;margin-top:12px}
+  .btn-go:disabled{background:#d9d2c3;cursor:not-allowed}
+  svg text{font-family:"Segoe UI",sans-serif}
+  footer{text-align:center;color:var(--muted);font-size:.78rem;padding:20px}
+  @media(max-width:980px){
+    #login{grid-template-columns:1fr}.login-art{display:none}
+    .grid,.two,.three,.hero{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN PAGE ================= -->
+<section id="login">
+  <div class="login-art">
+    <div class="brand">
+      <svg width="42" height="42" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="23" fill="#DFF3E7"/><path d="M10 26h28a14 12 0 0 1-28 0z" fill="#F28C38"/><path d="M24 24c-8-1-10-9-9-13 7 0 11 5 9 13z" fill="#2E7D5B"/><path d="M24 24c8-1 10-9 9-13-7 0-11 5-9 13z" fill="#7BC47F"/></svg>
+      <div>FoodWise AI<small>Smart Surplus Rescue</small></div>
+    </div>
+    <div>
+      <h2>Cook what's needed. Rescue what's left.</h2>
+      <p>A planning aid for college canteens that estimates demand, spots possible surplus early, and keeps a human in charge of every redistribution decision.</p>
+    </div>
+    <!-- illustration: canteen counter scene -->
+    <svg class="art-scene" viewBox="0 0 560 250" role="img" aria-label="Illustration of canteen food bowls">
+      <ellipse cx="280" cy="228" rx="260" ry="14" fill="rgba(0,0,0,.18)"/>
+      <rect x="20" y="170" width="520" height="46" rx="12" fill="#0d261f"/>
+      <rect x="20" y="170" width="520" height="12" rx="6" fill="#F28C38"/>
+      <!-- big pot -->
+      <path d="M70 170v-60a10 10 0 0 1 10-10h110a10 10 0 0 1 10 10v60z" fill="#DFF3E7"/>
+      <rect x="62" y="92" width="136" height="14" rx="7" fill="#F1E7D3"/>
+      <circle cx="105" cy="130" r="9" fill="#F28C38"/><circle cx="135" cy="140" r="9" fill="#E4572E"/><circle cx="160" cy="125" r="9" fill="#F28C38"/>
+      <path d="M100 78c-10-14 10-20 0-34M130 78c-10-14 10-20 0-34M160 78c-10-14 10-20 0-34" stroke="#cfe8da" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/>
+      <!-- bowls -->
+      <path d="M250 150h110a55 38 0 0 1-110 0z" fill="#FBF6EC"/>
+      <path d="M262 150a43 26 0 0 1 86 0z" fill="#F28C38"/>
+      <circle cx="285" cy="140" r="6" fill="#7BC47F"/><circle cx="312" cy="136" r="6" fill="#E4572E"/><circle cx="330" cy="143" r="5" fill="#7BC47F"/>
+      <path d="M400 150h110a55 38 0 0 1-110 0z" fill="#DFF3E7"/>
+      <path d="M412 150a43 26 0 0 1 86 0z" fill="#2E7D5B"/>
+      <circle cx="440" cy="138" r="6" fill="#FBF6EC"/><circle cx="468" cy="142" r="6" fill="#F28C38"/>
+      <!-- leaf -->
+      <path d="M520 60c-30 6-45 28-40 56 28-4 44-26 40-56z" fill="#7BC47F"/><path d="M520 60c-14 14-28 32-38 56" stroke="#2E7D5B" stroke-width="3" fill="none"/>
+    </svg>
+  </div>
+
+  <div class="login-panel">
+    <form class="login-card" id="loginForm" novalidate>
+      <h1>Welcome back</h1>
+      <p class="sub">Sign in to the canteen planning dashboard.</p>
+      <label for="email">Staff email</label>
+      <input id="email" type="email" placeholder="canteen@college.edu" autocomplete="username">
+      <div class="err" id="emailErr"></div>
+      <label for="pw">Password</label>
+      <div class="pw-wrap">
+        <input id="pw" type="password" placeholder="••••••••" autocomplete="current-password">
+        <button type="button" id="togglePw">Show</button>
+      </div>
+      <div class="err" id="pwErr"></div>
+      <button class="btn btn-primary" type="submit">Sign in</button>
+      <button class="btn btn-ghost" type="button" id="guestBtn">Continue with demo account</button>
+      <div class="hint"><b>Demo login:</b> canteen@college.edu / foodwise123<br>This is a front-end-only prototype login for demonstration — it is <b>not secure authentication</b>.</div>
+    </form>
+  </div>
+</section>
+
+<!-- ================= DASHBOARD ================= -->
+<div id="app" class="hidden">
+  <header class="top">
+    <div class="brand" style="font-size:1.15rem">
+      <svg width="32" height="32" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="23" fill="#DFF3E7"/><path d="M10 26h28a14 12 0 0 1-28 0z" fill="#F28C38"/><path d="M24 24c-8-1-10-9-9-13 7 0 11 5 9 13z" fill="#2E7D5B"/><path d="M24 24c8-1 10-9 9-13-7 0-11 5-9 13z" fill="#7BC47F"/></svg>
+      <div>FoodWise AI<small>Smart Surplus Rescue</small></div>
+    </div>
+    <div class="who"><span id="whoName"></span><button class="btn" id="logoutBtn">Log out</button></div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <h2>Today's canteen planner</h2>
+        <p id="todayStr"></p>
+        <p style="margin-top:6px">Enter what was prepared, test attendance scenarios, and see where surplus could appear — before it becomes waste.</p>
+      </div>
+      <svg viewBox="0 0 300 130" role="img" aria-label="Plate illustration">
+        <circle cx="150" cy="70" r="56" fill="#fff" stroke="#E3DccB" stroke-width="3"/>
+        <circle cx="150" cy="70" r="40" fill="#FBF6EC" stroke="#E3DccB"/>
+        <path d="M120 72a30 22 0 0 1 60 0z" fill="#F28C38"/>
+        <circle cx="136" cy="64" r="6" fill="#7BC47F"/><circle cx="158" cy="62" r="6" fill="#E4572E"/><circle cx="170" cy="68" r="4" fill="#7BC47F"/>
+        <path d="M60 30c-4-10 8-14 4-24M80 34c-4-10 8-14 4-24" stroke="#2E7D5B" stroke-width="3" fill="none" stroke-linecap="round" opacity=".5"/>
+        <path d="M236 40l30 6-12 30z" fill="#7BC47F"/><path d="M262 50c-8 8-14 16-20 30" stroke="#2E7D5B" stroke-width="2.5" fill="none"/>
+        <rect x="14" y="88" width="10" height="34" rx="5" fill="#2E7D5B"/><rect x="276" y="88" width="10" height="34" rx="5" fill="#F28C38"/>
+      </svg>
+    </section>
+
+    <div class="safety">
+      <b>Safety first:</b> FoodWise AI is a planning aid only. It <b>cannot judge or guarantee food safety</b>. Every redistribution must be reviewed and approved by trained canteen staff following your local food-safety rules.
+    </div>
+
+    <div class="grid">
+      <!-- FORM -->
+      <aside class="card">
+        <h3>Meal details</h3>
+        <p class="cap">Load a sample or enter your own numbers.</p>
+        <div class="samples" id="sampleChips"></div>
+        <form id="mealForm" novalidate>
+          <label for="food">Food name</label>
+          <input id="food" type="text" maxlength="40" placeholder="e.g. Veg Biryani">
+          <div class="field-err" id="e_food"></div>
+          <div class="row2">
+            <div><label for="prepared">Quantity prepared (servings)</label><input id="prepared" type="number" min="1" step="1"><div class="field-err" id="e_prepared"></div></div>
+            <div><label for="serv">Servings per student</label><input id="serv" type="number" min="0.25" max="5" step="0.25"><div class="field-err" id="e_serv"></div></div>
+          </div>
+          <div class="row2">
+            <div><label for="expected">Expected attendance</label><input id="expected" type="number" min="1" step="1"><div class="field-err" id="e_expected"></div></div>
+            <div><label for="actual">Actual attendance <span style="font-weight:400;color:var(--muted)">(optional)</span></label><input id="actual" type="number" min="0" step="1"><div class="field-err" id="e_actual"></div></div>
+          </div>
+          <label for="urgency">Urgency indicator (manual)</label>
+          <select id="urgency">
+            <option value="1">1 – Long shelf life / low urgency</option>
+            <option value="2">2 – Low</option>
+            <option value="3" selected>3 – Moderate</option>
+            <option value="4">4 – High (perishable)</option>
+            <option value="5">5 – Very high (serve soon)</option>
+          </select>
+          <div class="field-err" id="formMsg"></div>
+        </form>
+        <div class="banner info" style="margin-top:6px">Numbers update live as you type. Urgency is judged by staff, not by the app.</div>
+      </aside>
+
+      <!-- RESULTS -->
+      <section>
+        <div class="stats">
+          <div class="stat"><div class="l">Prepared servings</div><div class="v" id="sPrepared">–</div><div class="n" id="sPreparedN">&nbsp;</div></div>
+          <div class="stat demand"><div class="l">Estimated demand</div><div class="v" id="sDemand">–</div><div class="n" id="sDemandN">&nbsp;</div></div>
+          <div class="stat surplus"><div class="l">Potential surplus</div><div class="v" id="sSurplus">–</div><div class="n" id="sSurplusN">&nbsp;</div></div>
+          <div class="stat saved"><div class="l">Food saved (if approved)</div><div class="v" id="sSaved">–</div><div class="n" id="sSavedN">&nbsp;</div></div>
+        </div>
+
+        <div class="two">
+          <div class="card">
+            <h3>What if attendance drops?</h3>
+            <p class="cap">Drag the slider to test a different turnout. All numbers on this page follow it.</p>
+            <div class="sim-val"><span>Scenario attendance</span><b id="simVal">–</b></div>
+            <input type="range" id="sim" min="0" max="100" step="1">
+            <div class="quick" id="quick"></div>
+            <div id="simBanner"></div>
+          </div>
+
+          <div class="card">
+            <h3>Rescue Priority Score <span class="tag">RULE-BASED</span></h3>
+            <p class="cap">A transparent formula — <b>not a trained AI model</b>.</p>
+            <div class="gauge-wrap">
+              <svg width="130" height="130" viewBox="0 0 130 130" aria-label="Priority score gauge">
+                <circle cx="65" cy="65" r="52" fill="none" stroke="#F1E7D3" stroke-width="14"/>
+                <circle id="gArc" cx="65" cy="65" r="52" fill="none" stroke="#2E7D5B" stroke-width="14" stroke-linecap="round" stroke-dasharray="0 400" transform="rotate(-90 65 65)"/>
+                <text id="gNum" x="65" y="72" text-anchor="middle" font-size="30" font-weight="700" fill="#14342B" font-family="Georgia,serif">–</text>
+                <text x="65" y="92" text-anchor="middle" font-size="10" fill="#5E6E66">out of 100</text>
+              </svg>
+              <div>
+                <span class="band Low" id="gBand">–</span>
+                <ul class="plain" id="gWhy"></ul>
+              </div>
+            </div>
+            <p class="cap" style="margin-top:10px">Score = surplus points (max 60: min(surplus,150)÷150×60) + urgency points (max 40: (urgency−1)÷4×40). High ≥ 70, Medium 40–69, Low &lt; 40.</p>
+          </div>
+        </div>
+
+        <div class="two">
+          <div class="card">
+            <h3>Servings overview</h3>
+            <p class="cap">Prepared vs. demand vs. surplus vs. food saved.</p>
+            <div id="chart1"></div>
+          </div>
+          <div class="card">
+            <h3>Demand history (sample)</h3>
+            <p class="cap">Past 7 days of sample data plus today's scenario.</p>
+            <div id="chart2"></div>
+          </div>
+        </div>
+
+        <div class="three">
+          <div class="card">
+            <h3>Next-day preparation recommendation</h3>
+            <p class="cap">Blends scenario demand with sample history, plus a 5% safety buffer.</p>
+            <div style="display:flex;gap:26px;align-items:center;flex-wrap:wrap">
+              <div><div class="big" id="recQty">–</div><div class="cap" style="margin:0">servings suggested</div></div>
+              <div id="recWhy" style="flex:1;min-width:220px"></div>
+            </div>
+            <table style="margin-top:14px" id="histTable"></table>
+          </div>
+
+          <div class="card">
+            <h3>Human review before redistribution</h3>
+            <p class="cap">Required — the app never approves food on its own.</p>
+            <label class="check"><input type="checkbox" class="rv"> Food has been held at a safe temperature and is within the allowed time window.</label>
+            <label class="check"><input type="checkbox" class="rv"> Trained staff visually and sensorily checked the food and its packaging.</label>
+            <label class="check"><input type="checkbox" class="rv"> Allergen / ingredient labels are available and accurate.</label>
+            <label class="check"><input type="checkbox" class="rv"> The receiving NGO / shelter has agreed to collect it.</label>
+            <button class="btn btn-go" id="approveBtn" disabled>Approve for redistribution</button>
+            <div id="approveMsg"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <footer>FoodWise AI prototype · Hackathon build · Sample data only · Not a food-safety tool</footer>
+</div>
+
+<script>
+/* ================= SAMPLE DATA ================= */
+const SAMPLES = {
+  "Veg Biryani":      {food:"Veg Biryani", prepared:520, expected:450, actual:380, serv:1,    urgency:4,
+    history:[[440,452],[460,430],[430,418],[470,480],[420,395],[455,441],[400,372]]},
+  "Chapati & Dal":    {food:"Chapati & Dal", prepared:900, expected:480, actual:430, serv:2, urgency:3,
+    history:[[470,930],[450,880],[490,985],[460,905],[440,860],[480,950],[420,820]]},
+  "Idli Sambar":      {food:"Idli Sambar", prepared:600, expected:300, actual:"", serv:2,   urgency:5,
+    history:[[290,574],[310,610],[280,545],[300,598],[320,640],[270,520],[295,585]]},
+  "Paneer Wrap":      {food:"Paneer Wrap", prepared:260, expected:220, actual:190, serv:1,  urgency:2,
+    history:[[210,198],[230,221],[200,181],[225,214],[215,200],[205,188],[190,170]]}
+};
+const DEFAULT_HISTORY = [[440,430],[460,455],[430,410],[470,468],[420,400],[455,440],[400,380]];
+const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+/* ================= HELPERS ================= */
+const $ = id => document.getElementById(id);
+const fmt = n => Math.round(n).toLocaleString("en-IN");
+let currentHistory = DEFAULT_HISTORY;
+let approved = false;
+
+/* ================= LOGIN ================= */
+const DEMO = {email:"canteen@college.edu", pw:"foodwise123"};
+function enterApp(name){
+  try{ sessionStorage.setItem("fw_user", name); }catch(e){}
+  $("login").classList.add("hidden"); $("app").classList.remove("hidden");
+  $("whoName").textContent = "Signed in: " + name;
+  window.scrollTo(0,0);
+  init();
+}
+$("loginForm").addEventListener("submit", e=>{
+  e.preventDefault();
+  const em = $("email").value.trim().toLowerCase(), pw = $("pw").value;
+  $("emailErr").textContent = $("pwErr").textContent = "";
+  let ok = true;
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){ $("emailErr").textContent = "Enter a valid email address."; ok=false; }
+  if(pw.length < 6){ $("pwErr").textContent = "Password must be at least 6 characters."; ok=false; }
+  if(!ok) return;
+  if(em === DEMO.email && pw === DEMO.pw) enterApp("Canteen Manager");
+  else $("pwErr").textContent = "Wrong email or password (use the demo login below).";
+});
+$("guestBtn").addEventListener("click", ()=>enterApp("Demo Staff"));
+$("togglePw").addEventListener("click", ()=>{
+  const p=$("pw"); const s = p.type==="password"; p.type = s?"text":"password"; $("togglePw").textContent = s?"Hide":"Show";
+});
+$("logoutBtn").addEventListener("click", ()=>{
+  try{ sessionStorage.removeItem("fw_user"); }catch(e){}
+  $("app").classList.add("hidden"); $("login").classList.remove("hidden");
+});
+
+/* ================= FORM + VALIDATION ================= */
+function readForm(){
+  const errs = {};
+  const food = $("food").value.trim();
+  const num = id => $(id).value.trim()==="" ? NaN : Number($(id).value);
+  const prepared = num("prepared"), expected = num("expected"), serv = num("serv"), actualRaw = $("actual").value.trim();
+  const actual = actualRaw==="" ? null : Number(actualRaw);
+  const urgency = Number($("urgency").value);
+
+  if(food.length < 2 || food.length > 40) errs.food = "Enter a food name (2–40 characters).";
+  if(!Number.isInteger(prepared) || prepared < 1 || prepared > 50000) errs.prepared = "Whole number, 1–50,000.";
+  if(!Number.isInteger(expected) || expected < 1 || expected > 20000) errs.expected = "Whole number, 1–20,000.";
+  if(!(serv >= 0.25 && serv <= 5)) errs.serv = "Between 0.25 and 5.";
+  if(actual !== null && (!Number.isInteger(actual) || actual < 0 || actual > 20000)) errs.actual = "Whole number, 0–20,000, or leave blank.";
+  ["food","prepared","expected","serv","actual"].forEach(k=>$("e_"+k).textContent = errs[k]||"");
+  return {errs, v:{food,prepared,expected,serv,actual,urgency}};
+}
+
+/* ================= CALCULATIONS ================= */
+function calculate(v, attendance, history){
+  const demand = Math.round(attendance * v.serv);
+  const surplus = Math.max(0, v.prepared - demand);
+  const shortfall = Math.max(0, demand - v.prepared);
+  // Rule-based Rescue Priority Score
+  const sizePts = Math.min(surplus,150)/150*60;
+  const urgPts = (v.urgency-1)/4*40;
+  const score = Math.round(sizePts + urgPts);
+  const band = score>=70 ? "High" : score>=40 ? "Medium" : "Low";
+  // Next-day recommendation: blend scenario demand with historical per-student uptake
+  const histRate = history.reduce((s,h)=>s+h[1],0) / history.reduce((s,h)=>s+h[0],0); // servings per attending student
+  const histDemand = attendance * histRate;
+  const blended = (demand + histDemand)/2;
+  const recommended = Math.max(1, Math.ceil(blended * 1.05));
+  return {demand, surplus, shortfall, sizePts, urgPts, score, band, histRate, histDemand, recommended};
+}
+
+/* ================= CHARTS (plain SVG, no libraries) ================= */
+function barChart(el, items, opts={}){
+  const W=520,H=250,pad={l:36,r:10,t:22,b:46};
+  const max = Math.max(1, ...items.map(i=>i.value)) * 1.15;
+  const bw = (W-pad.l-pad.r)/items.length;
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${opts.label||'bar chart'}">
+    <defs><pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#DFF3E7"/><rect width="3" height="7" fill="#7BC47F"/></pattern></defs>`;
+  for(let g=0; g<=4; g++){
+    const y = pad.t + (H-pad.t-pad.b)*g/4;
+    s += `<line x1="${pad.l}" x2="${W-pad.r}" y1="${y}" y2="${y}" stroke="#E3DccB" stroke-dasharray="3 4"/>`;
+    s += `<text x="${pad.l-6}" y="${y+4}" text-anchor="end" font-size="10" fill="#5E6E66">${fmt(max*(1-g/4))}</text>`;
+  }
+  items.forEach((it,i)=>{
+    const h = (H-pad.t-pad.b)*it.value/max;
+    const x = pad.l + i*bw + bw*0.18, w = bw*0.64, y = H-pad.b-h;
+    s += `<rect x="${x}" y="${y}" width="${w}" height="${Math.max(h,0)}" rx="7" fill="${it.fill||it.color}" stroke="${it.stroke||'none'}" stroke-width="2"><animate attributeName="height" from="0" to="${Math.max(h,0)}" dur=".5s"/><animate attributeName="y" from="${H-pad.b}" to="${y}" dur=".5s"/></rect>`;
+    s += `<text x="${x+w/2}" y="${y-6}" text-anchor="middle" font-size="12" font-weight="700" fill="#14342B">${fmt(it.value)}</text>`;
+    s += `<text x="${x+w/2}" y="${H-pad.b+16}" text-anchor="middle" font-size="11" fill="#1F2A26">${it.label}</text>`;
+    if(it.sub) s += `<text x="${x+w/2}" y="${H-pad.b+30}" text-anchor="middle" font-size="9.5" fill="#5E6E66">${it.sub}</text>`;
+  });
+  s += `</svg>`;
+  el.innerHTML = s;
+}
+
+/* ================= RENDER ================= */
+function render(){
+  const {errs, v} = readForm();
+  const bad = Object.keys(errs).length>0;
+  $("formMsg").textContent = bad ? "Fix the highlighted fields to see results." : "";
+  if(bad){ ["sPrepared","sDemand","sSurplus","sSaved","recQty","gNum"].forEach(id=>$(id).textContent="–"); return; }
+
+  const att = Number($("sim").value);
+  const r = calculate(v, att, currentHistory);
+  const pctOfExp = Math.round(att/v.expected*100);
+
+  $("simVal").textContent = `${fmt(att)} students (${pctOfExp}% of expected)`;
+  $("sPrepared").textContent = fmt(v.prepared);
+  $("sPreparedN").textContent = v.food;
+  $("sDemand").textContent = fmt(r.demand);
+  $("sDemandN").textContent = `${fmt(att)} students × ${v.serv}`;
+  $("sSurplus").textContent = fmt(r.surplus);
+  $("sSurplusN").textContent = r.surplus>0 ? `${Math.round(r.surplus/v.prepared*100)}% of prepared` : (r.shortfall>0 ? `Shortfall of ${fmt(r.shortfall)}` : "No surplus");
+  $("sSaved").textContent = fmt(r.surplus);
+  $("sSavedN").textContent = approved ? "Reviewed & approved ✔" : "Pending human review";
+
+  // simulator banner
+  const bn = $("simBanner");
+  if(r.shortfall>0) bn.innerHTML = `<div class="banner info">At this turnout demand exceeds what was prepared by <b>${fmt(r.shortfall)}</b> servings — consider a backup plan.</div>`;
+  else if(r.surplus===0) bn.innerHTML = `<div class="banner ok">Prepared quantity matches estimated demand at this turnout.</div>`;
+  else if(r.surplus/v.prepared > .25) bn.innerHTML = `<div class="banner warn">Large surplus: <b>${fmt(r.surplus)}</b> servings may be left over. Plan a (human-reviewed) rescue early.</div>`;
+  else bn.innerHTML = `<div class="banner ok">Small surplus of <b>${fmt(r.surplus)}</b> servings expected.</div>`;
+
+  // gauge
+  const C = 2*Math.PI*52, arc = $("gArc");
+  arc.setAttribute("stroke-dasharray", `${C*r.score/100} ${C}`);
+  arc.setAttribute("stroke", r.band==="High"?"#E4572E": r.band==="Medium"?"#F28C38":"#2E7D5B");
+  $("gNum").textContent = r.score;
+  $("gBand").textContent = r.band + " priority"; $("gBand").className = "band " + r.band;
+  $("gWhy").innerHTML = `<li>Surplus size: ${fmt(r.surplus)} servings → <b>${r.sizePts.toFixed(0)}</b>/60 pts</li>
+    <li>Urgency ${v.urgency}/5 (entered by staff) → <b>${r.urgPts.toFixed(0)}</b>/40 pts</li>`;
+
+  // charts
+  barChart($("chart1"), [
+    {label:"Prepared", value:v.prepared, color:"#14342B"},
+    {label:"Est. demand", value:r.demand, color:"#F28C38"},
+    {label:"Surplus", value:r.surplus, color:"#E4572E"},
+    {label:"Food saved", sub: approved?"approved":"pending review", value:r.surplus, fill:approved?"#7BC47F":"url(#hatch)", stroke:"#7BC47F"}
+  ], {label:"Servings overview"});
+  const hist = currentHistory.map((h,i)=>({label:DAYS[i], value:h[1], color:"#9CC9B2"}));
+  hist.push({label:"Today", sub:"scenario", value:r.demand, color:"#F28C38"});
+  barChart($("chart2"), hist, {label:"Demand history"});
+
+  // recommendation
+  const diff = v.prepared - r.recommended;
+  $("recQty").textContent = fmt(r.recommended);
+  $("recWhy").innerHTML = `<ul class="plain" style="margin:0">
+    <li>Scenario demand: ${fmt(r.demand)} servings (${fmt(att)} × ${v.serv})</li>
+    <li>Sample-history demand: ${fmt(r.histDemand)} servings (${r.histRate.toFixed(2)} per attendee)</li>
+    <li>Average of the two + 5% buffer = <b>${fmt(r.recommended)}</b></li>
+    <li>${diff>0 ? `That is <b>${fmt(diff)}</b> fewer than today's ${fmt(v.prepared)}.` : diff<0 ? `That is <b>${fmt(-diff)}</b> more than today's ${fmt(v.prepared)}.` : "Same as today's quantity."}</li></ul>`;
+  $("histTable").innerHTML = `<tr><th>Day</th>${currentHistory.map((_,i)=>`<td>${DAYS[i]}</td>`).join("")}</tr>
+    <tr><th>Attendance</th>${currentHistory.map(h=>`<td>${h[0]}</td>`).join("")}</tr>
+    <tr><th>Consumed</th>${currentHistory.map(h=>`<td>${h[1]}</td>`).join("")}</tr>`;
+}
+
+/* sync slider bounds with form */
+function syncSlider(){
+  const {errs, v} = readForm();
+  if(errs.expected || errs.actual) return;
+  const max = Math.ceil(v.expected*1.5);
+  const sim = $("sim");
+  sim.max = max; sim.value = v.actual!==null ? Math.min(v.actual,max) : v.expected;
+  $("quick").innerHTML = "";
+  [["Expected",1],["−10%",.9],["−25%",.75],["−40%",.6],["+10%",1.1]].forEach(([t,f])=>{
+    const b=document.createElement("button"); b.type="button"; b.className="chip"; b.textContent=t;
+    b.onclick=()=>{ sim.value=Math.min(max,Math.round(v.expected*f)); resetApproval(); render(); };
+    $("quick").appendChild(b);
+  });
+}
+
+/* human review */
+function resetApproval(){
+  approved=false; document.querySelectorAll(".rv").forEach(c=>c.checked=false);
+  $("approveBtn").disabled=true; $("approveMsg").innerHTML="";
+}
+document.querySelectorAll(".rv").forEach(c=>c.addEventListener("change",()=>{
+  $("approveBtn").disabled = ![...document.querySelectorAll(".rv")].every(x=>x.checked);
+}));
+$("approveBtn").addEventListener("click",()=>{
+  approved=true;
+  $("approveMsg").innerHTML = `<div class="banner ok">Marked as reviewed by staff (${new Date().toLocaleTimeString()}). Staff remain responsible for the final decision.</div>`;
+  render();
+});
+
+/* samples + init */
+function loadSample(name){
+  const s = SAMPLES[name];
+  $("food").value=s.food; $("prepared").value=s.prepared; $("expected").value=s.expected;
+  $("actual").value=s.actual; $("serv").value=s.serv; $("urgency").value=s.urgency;
+  currentHistory = s.history;
+  document.querySelectorAll("#sampleChips .chip").forEach(c=>c.classList.toggle("on", c.textContent===name));
+  resetApproval(); syncSlider(); render();
+}
+let inited=false;
+function init(){
+  $("todayStr").textContent = new Date().toLocaleDateString("en-IN",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+  if(inited) return; inited=true;
+  Object.keys(SAMPLES).forEach(n=>{
+    const b=document.createElement("button"); b.type="button"; b.className="chip"; b.textContent=n; b.onclick=()=>loadSample(n);
+    $("sampleChips").appendChild(b);
+  });
+  ["food","prepared","expected","actual","serv","urgency"].forEach(id=>{
+    $(id).addEventListener("input",()=>{
+      if(id==="food"){ const m=Object.keys(SAMPLES).find(k=>k.toLowerCase()===$("food").value.trim().toLowerCase()); currentHistory = m?SAMPLES[m].history:DEFAULT_HISTORY; }
+      resetApproval();
+      if(id!=="food"&&id!=="urgency") syncSlider();
+      render();
+    });
+  });
+  $("sim").addEventListener("input",()=>{ resetApproval(); render(); });
+  loadSample("Veg Biryani");
+}
+try{ const u=sessionStorage.getItem("fw_user"); if(u) enterApp(u); }catch(e){}
+</script>
+</body>
+</html>
